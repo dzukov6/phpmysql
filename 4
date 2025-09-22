@@ -1,0 +1,24 @@
+arved_kliendid
+<?php
+$db = new PDO('sqlite:muusikapood.db');
+
+$query = "
+SELECT 
+    arved.arve_nr,
+    albumid.artist,
+    albumid.album,
+    kliendid.eesnimi,
+    kliendid.perenimi
+FROM arved
+JOIN albumid ON arved.albumid_id = albumid.id
+JOIN kliendid ON arved.kliendid_id = kliendid.id
+";
+
+$result = $db->query($query);
+
+foreach ($result as $row) {
+    echo "Arve: " . $row['arve_nr'] . "<br>";
+    echo "Kliendi nimi: " . $row['eesnimi'] . " " . $row['perenimi'] . "<br>";
+    echo "Album: " . $row['artist'] . " - " . $row['album'] . "<br><br>";
+}
+?>
