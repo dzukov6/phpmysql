@@ -1,0 +1,94 @@
+
+<?php
+session_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+if (isset($_SESSION['tuvastamine'])) {
+    header('Location: 07_admin.php');
+    exit();
+}
+
+if (!empty($_POST['login']) && !empty($_POST['pass'])) {
+    $login = htmlspecialchars(trim($_POST['login']));
+    $pass  = htmlspecialchars(trim($_POST['pass']));
+
+    if ($login === 'admin' && $pass === 'admin') {
+        $_SESSION['tuvastamine'] = 'misiganes';
+        header('Location: 07_admin.php');
+        exit();
+    } else {
+        $error = "Kasutaja või parool on vale.";
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+</head>
+<body>
+<h1>Login</h1>
+
+<?php if (!empty($error)): ?>
+    <p style="color:red;"><?php echo $error; ?></p>
+<?php endif; ?>
+
+<form action="" method="post">
+    <label>Login: <input type="text" name="login" required></label><br>
+    <label>Password: <input type="password" name="pass" required></label><br>
+    <input type="submit" value="Logi sisse">
+</form>
+
+<hr>
+<a href="07_register.php">Lisa uus kasutaja</a>
+</body>
+</html>
+
+
+
+
+<hr>
+<a href="07_register.php">Lisa uus kasutaja</a>
+
+
+
+<?php
+session_start();
+include('config.php');
+
+if (!isset($_SESSION['tuvastamine'])) {
+    header('Location: 07_login.php');
+    exit();
+}
+
+if (!empty($_POST['kasutaja']) && !empty($_POST['parool'])) {
+    $kasutaja = htmlspecialchars(trim($_POST['kasutaja']));
+    $parool   = htmlspecialchars(trim($_POST['parool']));
+    $sool     = 'taiestisuvalinetekst';
+    $kryp     = crypt($parool, $sool);
+
+    $kontroll = mysqli_query($yhendus, "SELECT COUNT(*) AS kokku FROM kasutajad WHERE kasutaja='$kasutaja'");
+    $rida     = mysqli_fetch_assoc($kontroll);
+
+    if ($rida['kokku'] > 0) {
+        echo "Selline kasutaja on juba olemas!";
+    } elseif (strlen($parool) < 5) {
+        echo "Parool peab olema vähemalt 5 tähemärki pikk!";
+    } else {
+        $lisa = mysqli_query($yhendus, "INSERT INTO kasutajad (kasutaja, parool) VALUES ('$kasutaja', '$kryp')");
+        echo $lisa ? "Kasutaja lisatud!" : "Midagi läks valesti!";
+    }
+}
+?>
+
+<h1>Uue kasutaja lisamine</h1>
+<form action="" method="post">
+    <label>Kasutajanimi: <input type="text" name="kasutaja"></label><br>
+    <label>Parool: <input type="password" name="parool"></label><br>
+    <input type="submit" value="Lisa kasutaja">
+</form>
+
+
+
