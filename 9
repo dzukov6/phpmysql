@@ -1,0 +1,28 @@
+<?php
+class Auto {
+    public $varv;
+    public $tootja;
+    public $kiirus = 0;
+
+    public function __construct($varv, $tootja) {
+        $this->varv = $varv;
+        $this->tootja = $tootja;
+    }
+
+    public function kiirenda() {
+        if ($this->kiirus < 100) {
+            $this->kiirus += 10;
+            if ($this->kiirus > 100) {
+                $this->kiirus = 100;
+            }
+            echo "Kiirus on nüüd: {$this->kiirus} km/h<br>";
+        } else {
+            echo "Auto on juba täiskiirusel (100 km/h).<br>";
+        }
+    }
+}
+
+$minuAuto = new Auto("punane", "Audi");
+
+while ($minuAuto->kiirus < 100) {
+    $minuAuto->kiirenda();
