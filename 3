@@ -1,0 +1,156 @@
+
+
+
+Muuda
+<?php
+include('config.php');
+
+if (empty($_GET['id'])) {
+    die('Albumi ID puudub!');
+}
+
+$id = intval($_GET['id']);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['artist'], $_POST['album'], $_POST['aasta'], $_POST['hind'])) {
+    $artist = $yhendus->real_escape_string(trim($_POST['artist']));
+    $album  = $yhendus->real_escape_string(trim($_POST['album']));
+    $aasta  = intval($_POST['aasta']);
+    $hind   = floatval($_POST['hind']);
+
+    if ($artist !== "" && $album !== "" && $aasta >= 1900 && $aasta <= 2099 && $hind > 0) {
+        $uuenda = "UPDATE albumid 
+                   SET artist='$artist', album='$album', aasta=$aasta, hind=$hind 
+                   WHERE id=$id";
+        $yhendus->query($uuenda);
+        header("Location: index.php");
+        exit;
+    } else {
+        echo "Palun täida kõik väljad korrektselt!";
+    }
+}
+
+$paring  = "SELECT * FROM albumid WHERE id=$id";
+$valjund = $yhendus->query($paring);
+
+if ($valjund->num_rows === 0) {
+    die("Albumi ID-ga $id ei leitud kirjet.");
+}
+
+$rida = $valjund->fetch_assoc();
+?>
+
+<h2>Muuda albumit</h2>
+
+<form action="" method="post">
+    <label>Artist:<br>
+        <input type="text" name="artist" required value="<?php echo htmlspecialchars($rida['artist']); ?>">
+    </label><br>
+
+    <label>Album:<br>
+        <input type="text" name="album" required value="<?php echo htmlspecialchars($rida['album']); ?>">
+    </label><br>
+
+    <label>Aasta:<br>
+        <input type="number" name="aasta" min="1900" max="2099" required value="<?php echo $rida['aasta']; ?>">
+    </label><br>
+
+    <label>Hind:<br>
+        <input type="number" name="hind" min="0.01" step="0.01" required value="<?php echo $rida['hind']; ?>">
+    </label><br><br>
+
+    <input type="submit" value="Muuda">
+</form>
+
+<p><a href="index.php">Tagasi albumite lehele</a></p>
+
+
+
+
+Index
+
+<?php
+include('config.php');
+
+if (isset($_GET['kustuta_id'])) {
+    $id      = intval($_GET['kustuta_id']);
+    $kustuta = "DELETE FROM albumid WHERE id=$id";
+    $yhendus->query($kustuta);
+    header("Location: index.php");
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['artist'], $_POST['album'], $_POST['aasta'], $_POST['hind'])) {
+    $artist = $yhendus->real_escape_string(trim($_POST['artist']));
+    $album  = $yhendus->real_escape_string(trim($_POST['album']));
+    $aasta  = intval($_POST['aasta']);
+    $hind   = floatval($_POST['hind']);
+
+    if ($artist !== "" && $album !== "" && $aasta >= 1900 && $aasta <= 2099 && $hind > 0) {
+        $lisa = "INSERT INTO albumid (artist, album, aasta, hind) 
+                 VALUES ('$artist', '$album', $aasta, $hind)";
+        $yhendus->query($lisa);
+        header("Location: index.php");
+        exit;
+    }
+}
+?>
+
+<h2>Albumid</h2>
+
+<table border="1" cellpadding="5" cellspacing="0">
+    <tr>
+        <th>ID</th>
+        <th>Artist</th>
+        <th>Album</th>
+        <th>Aasta</th>
+        <th>Hind</th>
+        <th>Kustuta</th>
+        <th>Muuda</th>
+    </tr>
+
+<?php
+$sql    = "SELECT * FROM albumid ORDER BY id ASC";
+$result = $yhendus->query($sql);
+
+if ($result->num_rows > 0) {
+    while ($rida = $result->fetch_assoc()) {
+        echo "<tr>
+                <td>{$rida['id']}</td>
+                <td>{$rida['artist']}</td>
+                <td>{$rida['album']}</td>
+                <td>{$rida['aasta']}</td>
+                <td>{$rida['hind']}</td>
+                <td><a href='?kustuta_id={$rida['id']}' onclick='return confirm(\"Oled kindel, et soovid kustutada?\")'>Kustuta</a></td>
+                <td><a href='muuda.php?id={$rida['id']}'>Muuda</a></td>
+              </tr>";
+    }
+} else {
+    echo "<tr><td colspan='7'>Andmebaasis pole albumeid</td></tr>";
+}
+?>
+</table>
+
+<h3>Lisa uus album</h3>
+
+<form action="" method="post">
+    <label>Artist:<br>
+        <input type="text" name="artist" required>
+    </label><br>
+
+    <label>Album:<br>
+        <input type="text" name="album" required>
+    </label><br>
+
+    <label>Aasta:<br>
+        <input type="number" name="aasta" min="1900" max="2099" required>
+    </label><br>
+
+    <label>Hind:<br>
+        <input type="number" name="hind" min="0.01" step="0.01" required>
+    </label><br><br>
+
+    <input type="submit" value="Lisa">
+</form>
+
+
+
