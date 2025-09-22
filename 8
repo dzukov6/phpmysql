@@ -1,0 +1,49 @@
+Uudised.php
+<?php
+$failinimi = "MOCK_DATA.csv";
+$uudiseid_lehel = 100;
+
+if (!file_exists($failinimi)) {
+    die("CSV fail puudub!");
+}
+
+$read = array_map('str_getcsv', file($failinimi));
+$pais = array_shift($read);
+
+$kokku = count($read);
+$lehti_kokku = ceil($kokku / $uudiseid_lehel);
+
+$leht = isset($_GET['page']) ? intval($_GET['page']) : 1;
+if ($leht < 1) $leht = 1;
+if ($leht > $lehti_kokku) $leht = $lehti_kokku;
+
+$algus = ($leht - 1) * $uudiseid_lehel;
+$valik = array_slice($read, $algus, $uudiseid_lehel);
+
+echo "<h2>Uudised</h2>";
+echo "Kokku uudiseid: $kokku<br>";
+echo "Uudiseid lehel: $uudiseid_lehel<br>";
+echo "Lehti kokku: $lehti_kokku<br><hr>";
+
+foreach ($valik as $rida) {
+    echo "<h3>" . htmlspecialchars($rida[1]) . "</h3>";
+    echo "<p>" . htmlspecialchars($rida[2]) . "</p>";
+}
+
+echo "<div style='margin-top:20px'>";
+if ($leht > 1) {
+    echo "<a href='?page=" . ($leht - 1) . "'>⟵ Eelmine</a> ";
+}
+for ($i = 1; $i <= $lehti_kokku; $i++) {
+    if ($i == $leht) {
+        echo "<b>[$i]</b> ";
+    } else {
+        echo "<a href='?page=$i'>$i</a> ";
+    }
+}
+if ($leht < $lehti_kokku) {
+    echo "<a href='?page=" . ($leht + 1) . "'>Järgmine ⟶</a>";
+}
+echo "</div>";
+?>
+
