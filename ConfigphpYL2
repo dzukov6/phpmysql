@@ -1,0 +1,13 @@
+config.php
+<?php
+$host   = "localhost";
+$user   = "root";
+$pass   = "";
+$dbname = "muusikapood";
+
+$conn = new mysqli($host, $user, $pass, $dbname);
+
+if ($conn->connect_error) {
+    die("Andmebaasiga ei onnestunud ühendust luua: " . $conn->connect_error);
+}
+?>
