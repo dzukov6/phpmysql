@@ -1,0 +1,103 @@
+index.php
+
+<?php
+include 'config.php';
+echo "<h2>Kogu albumite sisu (kuni 10 rida)</h2>";
+$sql    = "SELECT * FROM albumid LIMIT 10";
+$result = $conn->query($sql);
+
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        echo "ID: {$row['id']} | Artist: {$row['artist']} | Album: {$row['album']} | Aasta: {$row['aasta']} | Hind: {$row['hind']} €<br>";
+    }
+} else {
+    echo "0 tulemust";
+}
+echo "<h2>Artist ja album, sorteeritud artisti järgi (kuni 10 rida)</h2>";
+$sql    = "SELECT artist, album FROM albumid ORDER BY artist ASC LIMIT 10";
+$result = $conn->query($sql);
+
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        echo "Artist: {$row['artist']} | Album: {$row['album']}<br>";
+    }
+} else {
+    echo "0 tulemust";
+}
+echo "<h2>Artist ja album, aasta 2010 ja uuemad</h2>";
+$sql    = "SELECT artist, album FROM albumid WHERE aasta >= 2010";
+$result = $conn->query($sql);
+
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        echo "Artist: {$row['artist']} | Album: {$row['album']}<br>";
+    }
+} else {
+    echo "0 tulemust";
+}
+
+echo "<h2>Statistika: erinevate albumite arv, keskmine hind ja koguväärtus</h2>";
+$sql    = "SELECT COUNT(DISTINCT album) AS erinevaid_albumeid, AVG(hind) AS keskmine_hind, SUM(hind) AS koguväärtus FROM albumid";
+$result = $conn->query($sql);
+$row    = $result->fetch_assoc();
+echo "Erinevaid albumeid: {$row['erinevaid_albumeid']}<br>";
+echo "Keskmine hind: " . number_format($row['keskmine_hind'], 2) . " €<br>";
+echo "Koguväärtus: " . number_format($row['koguväärtus'], 2) . " €<br>";
+echo "<h2>Kõige vanema albumi nimed</h2>";
+$sql    = "SELECT MIN(aasta) AS vanim_aasta FROM albumid";
+$result = $conn->query($sql);
+$row    = $result->fetch_assoc();
+$vanim_aasta = $row['vanim_aasta'];
+$sql    = "SELECT album FROM albumid WHERE aasta = $vanim_aasta";
+$result = $conn->query($sql);
+while ($row = $result->fetch_assoc()) {
+    echo $row['album'] . "<br>";
+}
+echo "<h2>Albumid, mille hind on keskmisest kõrgem</h2>";
+$sql    = "SELECT AVG(hind) AS keskmine_hind FROM albumid";
+$result = $conn->query($sql);
+$row    = $result->fetch_assoc();
+$keskmine_hind = $row['keskmine_hind'];
+$sql    = "SELECT artist, album, hind FROM albumid WHERE hind > $keskmine_hind";
+$result = $conn->query($sql);
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        echo "Artist: {$row['artist']} | Album: {$row['album']} | Hind: {$row['hind']} €<br>";
+    }
+} else {
+    echo "0 tulemust";
+}
+echo "<h2>Otsi albumit</h2>";
+?>
+<form method="GET" action="">
+    <select name="veerg">
+        <option value="artist">Artist</option>
+        <option value="album">Album</option>
+    </select>
+    <input type="text" name="otsing" placeholder="Sisesta otsingusõna...">
+    <input type="submit" value="Otsi">
+</form>
+<?php
+if (!empty($_GET['otsing']) && !empty($_GET['veerg'])) {
+    $otsing = $conn->real_escape_string($_GET['otsing']);
+    $veerg  = ($_GET['veerg'] === 'artist') ? 'artist' : 'album';
+
+    $sql    = "SELECT artist, album, aasta, hind FROM albumid WHERE $veerg LIKE '%$otsing%'";
+    $result = $conn->query($sql);
+
+    echo "<h3>Otsingu tulemused:</h3>";
+
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            echo "Artist: {$row['artist']} | Album: {$row['album']} | Aasta: {$row['aasta']} | Hind: {$row['hind']} €<br>";
+        }
+    } else {
+        echo "0 tulemust";
+    }
+}
+
+$conn->close();
+?>
+
+
+
